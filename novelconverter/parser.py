@@ -31,7 +31,7 @@ def build_blockparser():
 
 
 class InlineParser(Processor):
-    """Parse strings into a JSON-formatted string
+    """Parse strings into a JSON-formatted string.
 
     Example:
         {"type": "parser name", "content": [content]}
@@ -89,7 +89,7 @@ class InlineParser(Processor):
 
 
 class BlockParser(Processor):
-    """Parse a JSON-formatted string into a dict object"""
+    """Parse a JSON-formatted string into a dict object."""
 
     def para(self, source):
         """Paragraph

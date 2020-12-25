@@ -20,10 +20,10 @@ def build_postprocessor():
 
 
 class PreProcessor(util.Processor):
-    """Process a strings before running parser"""
+    """Process a strings before running parser."""
     pass
 
 
 class PostProcessor(util.Processor):
-    """Process a strings after running renderer"""
+    """Process a strings after running renderer."""
     pass

@@ -8,6 +8,8 @@ from .__meta__ import __version__ as version
 
 
 class ElementTree:
+    """A ElementTree that holds the syntax and contents."""
+
     def __init__(self, novelconv):
         self.nv = novelconv
         self.root = {
@@ -38,12 +40,12 @@ class ElementTree:
         pass
 
     def clear(self):
-        """Cleanup ElementTree"""
+        """Cleanup ElementTree."""
         self.root["block"] = [{}]
         self.root["meta"] = {}
 
     def parse(self, source):
-        """Parse a JSON-formatted string into a Tree object
+        """Parse a JSON-formatted string into a Tree object.
 
         Args:
             source (str): JSON-formatted string
@@ -88,7 +90,6 @@ class Processor:
         return source
 
 
-# "Registry"内で使用される名前付きタプルの定義
 _PriorityItem = namedtuple("PriorityItem", ["name", "priority"])
 
 
@@ -114,7 +115,6 @@ class Registry:
 
     def __contains__(self, item):
         if isinstance(item, str):
-            # 同名のアイテムが存在するかを確認
             return item in self._data.keys()
         return item in self._data.values()
 
@@ -124,16 +124,16 @@ class Registry:
 
     def __getitem__(self, key):
         self._sort()
+        # reference reg[start:stop]
         if isinstance(key, slice):
-            # スライスで指定した場合
             reg = Registry()
             for k, v in self._priority[key]:
                 reg.add(self._data[k], k, v)
             return reg
+        # reference reg[index]
         if isinstance(key, int):
-            # インデックスで指定した場合
             return self._data[self._priority[key].name]
-        # 文字列で指定した場合
+        # reference reg["itemname"]
         return self._data[key]
 
     def __len__(self):
@@ -149,7 +149,7 @@ class Registry:
             self._is_sorted = True
 
     def get_index(self, name):
-        """Return the index of the given name
+        """Return the index of the given name.
 
         Args:
             name (str): index name
@@ -173,7 +173,6 @@ class Registry:
             priority (int): priority
         """
         if name in self:
-            # 同名のアイテムがある場合削除
             self.delete(name)
         self._is_sorted = False
         self._data[name] = item

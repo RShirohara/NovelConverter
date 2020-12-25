@@ -12,7 +12,7 @@ class NovelConverter:
 
     Convert syntax for multiple Web-Novel sites.
 
-    Example:
+    Examples:
         novelconv = NovelConverter()
         novelconv.build_registry()
         result = novelconv.convert(source)
@@ -30,7 +30,7 @@ class NovelConverter:
         self.postprocessor = build_postprocessor()
 
     def convert(self, source):
-        """Convert
+        """Convert syntax.
 
         Args:
             source (str): source strings
