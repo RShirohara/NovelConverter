@@ -1,10 +1,22 @@
 # -*- coding: utf-8 -*-
 # author: @RShirohara
 
-
-from collections import namedtuple
+import dataclasses
+import typing
 
 from .__meta__ import __version__ as version
+
+
+ProcVar = typing.TypeVar("Processor")
+RegVar = typing.TypeVar("Registry")
+PriItemVar = typing.TypeVar("PriorityItem")
+
+
+class _PriorityItem(typing.NamedTuple):
+    """A Priority item used in Registry."""
+
+    name: str
+    priority: int
 
 
 class ElementTree:
@@ -90,10 +102,8 @@ class Processor:
         return source
 
 
-_PriorityItem = namedtuple("PriorityItem", ["name", "priority"])
-
-
-class Registry:
+@dataclasses.dataclass
+class Registry(typing.Generic[PriItemVar]):
     """A priority sorted by registry.
 
     Use "add to add items and "delete" to remove items.
@@ -108,7 +118,11 @@ class Registry:
         item = reg["Hoge"]
     """
 
-    def __init__(self):
+    _data: dict = dataclasses.field(init=False)
+    _priority: list[PriItemVar] = dataclasses.field(init=False)
+    _is_sorted: bool = dataclasses.field(init=False)
+
+    def __post_init__(self):
         self._data = {}
         self._priority = []
         self._is_sorted = False
@@ -139,9 +153,6 @@ class Registry:
     def __len__(self):
         return len(self._priority)
 
-    def __repr__(self):
-        return f"<{self.__class__.__name__}({list(self)})>"
-
     def _sort(self):
         """Sort the registry by priority."""
         if not self._is_sorted:
@@ -161,7 +172,7 @@ class Registry:
             )
         raise ValueError(f"No item named {name} exists.")
 
-    def add(self, item, name, priority):
+    def add(self, item, name, priority) -> None:
         """Add an item to the registry with the given name and priority.
 
         If an item is registered with a "name" which already exists, the
