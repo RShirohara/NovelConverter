@@ -3,13 +3,7 @@
 
 import dataclasses
 import typing
-
-from .__meta__ import __version__ as version
-
-
-ProcVar = typing.TypeVar("Processor")
-RegVar = typing.TypeVar("Registry")
-PriItemVar = typing.TypeVar("PriorityItem")
+from types import FunctionType
 
 
 class _PriorityItem(typing.NamedTuple):
@@ -17,79 +11,6 @@ class _PriorityItem(typing.NamedTuple):
 
     name: str
     priority: int
-
-
-class ElementTree:
-    """A ElementTree that holds the syntax and contents."""
-
-    def __init__(self, novelconv):
-        self.nv = novelconv
-        self.root = {
-            "block": [{}],
-            "meta": {},
-            "NovelConv-Version": version,
-        }
-
-    def __contains__(self, item):
-        return item in self.root["block"]
-
-    def __getitem__(self, key):
-        if isinstance(key, slice):
-            return self.root["block"][key.start:key.stop]
-        return self.root["block"][key]
-
-    def __iter__(self):
-        return iter(self.root["block"])
-
-    def __len__(self):
-        return len(self.root["block"])
-
-    def __repr__(self):
-        return f"<{self.__class__.__name__}({list(self)})>"
-
-    def _get_meta(self, source):
-        # TODO: #4
-        pass
-
-    def clear(self):
-        """Cleanup ElementTree."""
-        self.root["block"] = [{}]
-        self.root["meta"] = {}
-
-    def parse(self, source):
-        """Parse a JSON-formatted string into a Tree object.
-
-        Args:
-            source (str): JSON-formatted string
-        """
-        self.clear()
-        _cache = []
-        for i in [s for s in source.split("\n\n") if s]:
-            if "meta" in self.nv.blockparser.reg:
-                _meta = self.nv.blockparser.reg["meta"](i)
-                if _meta:
-                    self.root["meta"] = _meta
-                    _cache.remove(i)
-                    self.nv.blockparser.reg.delete("meta")
-                    break
-            _cache.append(i)
-        for c in _cache:
-            _i = len(self.root["block"]) - 1
-            if "code_block" in self.nv.blockparser.reg:
-                _match = self.nv.blockparser.reg["code_block"](c)
-                if _match:
-                    self.root["block"].insert(_i, _match)
-                    continue
-                self.nv.blockparser.reg.delete("code_block")
-            c = self.nv.inlineparser.run(c)
-            for rb in self.nv.blockparser.reg:
-                if "type" in self.root["block"][_i]:
-                    break
-                _result = rb(c)
-                if not _result:
-                    continue
-                self.root["block"].insert(_i, _result)
-        self.root["block"] = [r for r in self.root["block"] if r]
 
 
 class Processor:
@@ -103,7 +24,7 @@ class Processor:
 
 
 @dataclasses.dataclass
-class Registry(typing.Generic[PriItemVar]):
+class Registry:
     """A priority sorted by registry.
 
     Use "add to add items and "delete" to remove items.
@@ -119,15 +40,15 @@ class Registry(typing.Generic[PriItemVar]):
     """
 
     _data: dict = dataclasses.field(init=False)
-    _priority: list[PriItemVar] = dataclasses.field(init=False)
+    _priority: list[_PriorityItem] = dataclasses.field(init=False)
     _is_sorted: bool = dataclasses.field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._data = {}
         self._priority = []
         self._is_sorted = False
 
-    def __contains__(self, item):
+    def __contains__(self, item: typing.Union[str, int]) -> _PriorityItem:
         if isinstance(item, str):
             return item in self._data.keys()
         return item in self._data.values()
@@ -136,7 +57,7 @@ class Registry(typing.Generic[PriItemVar]):
         self._sort()
         return iter([self._data[k] for k, v in self._priority])
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: typing.Union[slice, str, int]) -> dict:
         self._sort()
         # reference reg[start:stop]
         if isinstance(key, slice):
@@ -150,20 +71,22 @@ class Registry(typing.Generic[PriItemVar]):
         # reference reg["itemname"]
         return self._data[key]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._priority)
 
-    def _sort(self):
+    def _sort(self) -> None:
         """Sort the registry by priority."""
         if not self._is_sorted:
             self._priority.sort(key=lambda item: item.priority, reverse=True)
             self._is_sorted = True
 
-    def get_index(self, name):
+    def get_index(self, name: str) -> FunctionType:
         """Return the index of the given name.
 
         Args:
             name (str): index name
+        Returns:
+            function: function
         """
         if name in self:
             self._sort()
@@ -172,7 +95,7 @@ class Registry(typing.Generic[PriItemVar]):
             )
         raise ValueError(f"No item named {name} exists.")
 
-    def add(self, item, name, priority) -> None:
+    def add(self, item: FunctionType, name: str, priority: int) -> None:
         """Add an item to the registry with the given name and priority.
 
         If an item is registered with a "name" which already exists, the
@@ -189,7 +112,7 @@ class Registry(typing.Generic[PriItemVar]):
         self._data[name] = item
         self._priority.append(_PriorityItem(name, priority))
 
-    def delete(self, name, strict=True):
+    def delete(self, name: str, strict: bool = True) -> None:
         """Delete an item to the registry with the given name.
 
         Args:

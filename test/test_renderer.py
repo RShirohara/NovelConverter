@@ -5,7 +5,7 @@ import unittest
 
 from novelconverter import NovelConverter
 from novelconverter.renderer import build_renderer
-from novelconverter.util import ElementTree
+from novelconverter.tree import ElementTree
 
 
 class TestRenderer(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestRenderer(unittest.TestCase):
 
     def setUp(self):
         self.renderer = build_renderer()
-        self.tree = ElementTree(NovelConverter())
+        self.tree = ElementTree()
 
     # Add renderer function
 
@@ -31,7 +31,7 @@ class TestRenderer(unittest.TestCase):
         self.assertEqual(result, self.renderer.reg["para"](source))
 
     def test_run(self):
-        self.tree.root["block"] = [
+        self.tree.root.block = [
             {
                 "type": "para",
                 "content": [

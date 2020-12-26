@@ -4,7 +4,7 @@
 from .parser import build_blockparser, build_inlineparser
 from .renderer import build_renderer
 from .processor import build_postprocessor, build_preprocessor
-from .util import ElementTree
+from .tree import ElementTree
 
 
 class NovelConverter:
@@ -18,18 +18,18 @@ class NovelConverter:
         result = novelconv.convert(source)
     """
 
-    def __init__(self):
-        self.tree = ElementTree(self)
+    def __init__(self) -> None:
+        self.tree = ElementTree()
 
-    def build_registry(self):
+    def build_registry(self) -> None:
         """Build default registry."""
-        self.inlineparser = build_inlineparser()
-        self.blockparser = build_blockparser()
+        self.tree.ip = build_inlineparser()
+        self.tree.bp = build_blockparser()
         self.renderer = build_renderer()
         self.preprocessor = build_preprocessor()
         self.postprocessor = build_postprocessor()
 
-    def convert(self, source):
+    def convert(self, source: str) -> str:
         """Convert syntax.
 
         Args:

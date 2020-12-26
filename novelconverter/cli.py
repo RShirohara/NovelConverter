@@ -74,8 +74,8 @@ def load_extension(ext_name, proc_name):
 
 class NovelConverter(novelconverter.NovelConverter):
     def build_registry(self, from_form, to_form):
-        self.inlineparser = load_extension(from_form, "inlineparser")
-        self.blockparser = load_extension(from_form, "blockparser")
+        self.tree.ip = load_extension(from_form, "inlineparser")
+        self.tree.bp = load_extension(from_form, "blockparser")
         self.renderer = load_extension(to_form, "renderer")
         self.preprocessor = load_extension(from_form, "preprocessor")
         self.postprocessor = load_extension(to_form, "postprocessor")

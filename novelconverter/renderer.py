@@ -45,7 +45,7 @@ class Renderer(util.Processor):
         return source
 
     def run(self, tree):
-        result = copy(tree.root["block"])
+        result = copy(tree.root.block)
         for i in range(len(tree)):
             result[i] = self._render_nest(result[i])
         return [r for r in result if r]
